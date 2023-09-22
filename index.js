@@ -1,87 +1,48 @@
-const [executable, script, ...input] = process.argv
+let [,, amount] = process.argv // ignore executable and script
 
-// console.log("executable:", executable);
-// console.log("script:", script);
-// console.log("input:", input);
+// Assume amount to be a number that can be converted to change.
 
-// Find the first argument that could be used as an amount of money
-let amount = input.find( item => {
-  // Remove any leading or trailing "€" symbols (Regular Expression)
-  item = item.replace(/€/g, "")
+amount = parseFloat(amount)
 
-  item = Number(item)
-
-  if (isNaN(item)) {
-    return false
-  }
-
-  if (item < 0.01) {
-    // Too small or negative
-    return false
-  }
-
-  return true
-})
-
-// console.log("amount:", amount, typeof amount);
-
-if (!amount) {
-  console.log("Arguments should include a number greater than or equal to 0.01")
-  return
-}
-
-// Convert the valid string to a number
-amount = Number(amount.replace(/€/g, ""))
-
-const denominations = [
-  // Notes
-  500,
-  200,
-  100,
-  50,
-  20,
-  10,
-  5,
-  // Coins
-  2,
-  1,
-  0.5,
-  0.2,
-  0.1,
-  0.05,
-  0.02,
-  0.01
-]
+const noteValues = [ 500, 200, 100, 50, 20, 10, 5 ]
+const coinValues = [ 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 ]
 
 const notes = []
 const coins = []
 const output = { notes, coins }
 
-// Array.prototype.every() stops executing if a falsy value is returned
-denominations.every( denomination => {
-  if (denomination > amount) {
-    // This denomination is not part of the change
-  } else {
-    const count = Math.floor(amount / denomination)
-    const value = denomination * count
-    amount -= value
+// Split amount into 2 parts:
+// * an amount that can only be paid in coins
+let coinAmount = amount % 5
+// * an amount that can be paid in notes
+let noteAmount = amount - coinAmount
 
-    // Ensure that round errors are corrected
-    amount = Math.round(amount * 100) / 100
+// Treat the notes
+for ( let ii = 0; ii < noteValues.length; ii += 1 ) {
+  const noteValue = noteValues[ii]
+  if (noteValue <= noteAmount) {
+    notes.push(noteValue)
+    noteAmount -= noteValue
 
-    if (denomination > 2) {
-      pocket = notes
-    } else {
-      pocket = coins
-    }
+    // The next line might be needed to deal with rounding errors
+    // noteAmount = Math.floor(noteAmount * 100) / 100
 
-    for (token = 0; token < count; token += 1) {
-      pocket.push(denomination)
-    }
+    ii -- // Check if we need more than one note with this value
   }
+}
 
-  // Keep going until amount is too small for change
-  return 0.01 <= amount
-})
+// Treat the coins
+for ( let ii = 0; ii < coinValues.length; ii += 1 ) {
+  const coinValue = coinValues[ii]
+  if (coinValue <= coinAmount) {
+    coins.push(coinValue)
+    coinAmount -= coinValue
+
+    // The next line might be needed to deal with rounding errors
+    // coinAmount = Math.floor(coinAmount * 100) / 100
+
+    ii -- // Check if we need more than one coin with this value
+  }
+}
 
 console.log(output)
