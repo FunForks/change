@@ -26,7 +26,7 @@ let amount = input.find( item => {
 // console.log("amount:", amount, typeof amount);
 
 if (!amount) {
-  console.log("Arguments should include a number greater than or equal o than 0.01")
+  console.log("Arguments should include a number greater than or equal to 0.01")
   return
 }
 
